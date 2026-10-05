@@ -17,8 +17,8 @@ def load_image(fname):
         img = np.stack([img] * 3, axis=-1)
     img = img[:, :, :3]
     img = img.astype(np.float32)
-    if img.max() > 1.0:
-        img /= 255.0
+    if img.max() <= 1.0:
+        img *= 255.0
     padded = np.pad(img, pad_width=((13, 13), (13, 13), (0, 0)), mode="reflect")
     return img, padded
 
@@ -86,7 +86,7 @@ def main():
     cuda.synchronize()
 
     out = d_out.copy_to_host()
-    out = (np.clip(out, 0, 1) * 255).round().astype(np.uint8)
+    out = out.astype(np.uint8)
     imsave("output.jpg", out)
 
 
