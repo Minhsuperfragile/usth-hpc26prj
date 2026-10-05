@@ -38,7 +38,7 @@ def nlm_denoise(padded_img, out):
         gy = cuda.blockIdx.y * BLOCK_SIZE + sy # global image position
         gx = cuda.blockIdx.x * BLOCK_SIZE + sx
         if gy < padded_img.shape[0] and gx < padded_img.shape[1]:
-            for c in range(3):
+            for c in range(3):  
                 shared_mem[sy, sx, c] = padded_img[gy, gx, c] 
     cuda.syncthreads()
 
