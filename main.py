@@ -16,10 +16,9 @@ def load_image(fname):
     if img.ndim == 2:
         img = np.stack([img] * 3, axis=-1)
     img = img[:, :, :3]
-    if np.issubdtype(img.dtype, np.integer):   # JPG loads as uint8 0..255
-        img = img.astype(np.float32) / 255.0
-    else:                                      # PNG already loads as 0..1 floats
-        img = img.astype(np.float32)
+    img = img.astype(np.float32)
+    if img.max() > 1.0:
+        img /= 255.0
     padded = np.pad(img, pad_width=((13, 13), (13, 13), (0, 0)), mode="reflect")
     return img, padded
 
