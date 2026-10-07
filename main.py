@@ -25,8 +25,8 @@ def load_image(fname):
 @cuda.jit
 def nlm_denoise(padded_img, out):
     x,y = cuda.grid(2)
-    tx = cuda.threadIdx.x
-    ty = cuda.threadIdx.y
+    tx = cuda.threadIdx.x #col id
+    ty = cuda.threadIdx.y #row id
 
     # map pixel from global image to the shared image
     tid = ty * BLOCK_SIZE + tx
@@ -75,14 +75,14 @@ def main():
     img, padded = load_image(sys.argv[1])
     H, W = img.shape[:2]
 
-    d_padded = cuda.to_device(np.ascontiguousarray(padded))
+    d_padded = cuda.to_device(padded)
     d_out = cuda.device_array((H, W, 3), dtype=np.float32)
 
-    threads = (BLOCK_SIZE, BLOCK_SIZE)
-    blocks = ((W + BLOCK_SIZE - 1) // BLOCK_SIZE,
+    blocks = (BLOCK_SIZE, BLOCK_SIZE)
+    grid = ((W + BLOCK_SIZE - 1) // BLOCK_SIZE,
               (H + BLOCK_SIZE - 1) // BLOCK_SIZE)
     
-    nlm_denoise[blocks, threads](d_padded, d_out)
+    nlm_denoise[grid, blocks](d_padded, d_out)
     cuda.synchronize()
 
     out = d_out.copy_to_host()
