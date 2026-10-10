@@ -73,7 +73,7 @@ def main():
     d_padded = cuda.to_device(padded)
     d_out = cuda.device_array((H, W, 3), dtype=np.float32)
 
-    threads = (BLOCK_SIZE, BLOCK_SIZE)
+    grid = (BLOCK_SIZE, BLOCK_SIZE)
     blocks = (math.ceil(W / BLOCK_SIZE),
               math.ceil(H / BLOCK_SIZE))
     
