@@ -13,13 +13,8 @@ SM_SIZE = BLOCK_SIZE + (R-1) + (k-1)
 
 def load_image(fname):
     img = imread(fname)
-    if img.ndim == 2:
-        img = np.stack([img] * 3, axis=-1)
-    img = img[:, :, :3]
     img = img.astype(np.float32)
-    if img.max() <= 1.0:
-        img *= 255.0
-    padded = np.pad(img, pad_width=((13, 13), (13, 13), (0, 0)), mode="reflect")
+    padded = np.pad(img, pad_width=((13, 13), (13, 13), (0, 0)))
     return img, padded
 
 @cuda.jit
@@ -75,12 +70,12 @@ def main():
     img, padded = load_image(sys.argv[1])
     H, W = img.shape[:2]
 
-    d_padded = cuda.to_device(np.ascontiguousarray(padded))
+    d_padded = cuda.to_device(padded)
     d_out = cuda.device_array((H, W, 3), dtype=np.float32)
 
     threads = (BLOCK_SIZE, BLOCK_SIZE)
-    blocks = ((W + BLOCK_SIZE - 1) // BLOCK_SIZE,
-              (H + BLOCK_SIZE - 1) // BLOCK_SIZE)
+    blocks = (math.ceil(W / BLOCK_SIZE),
+              math.ceil(H / BLOCK_SIZE))
     
     nlm_denoise[blocks, threads](d_padded, d_out)
     cuda.synchronize()
